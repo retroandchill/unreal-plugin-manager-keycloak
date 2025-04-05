@@ -5,3 +5,4 @@ node_modules/
 .settings/
 .project
 .classpath
+/api-key-module/dependency-reduced-pom.xml
