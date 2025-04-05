@@ -1,32 +1,56 @@
-version: '3.8'
 services:
-  auth-server:
+  keycloak:
     image: quay.io/keycloak/keycloak:26.1.0
+    depends_on:
+      - postgresql
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_HTTP_ENABLED: "true"
-      KC_HOSTNAME: auth-server
+      KC_HOSTNAME: http://localhost:8080
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgresql/keycloak
+      KC_DB_USERNAME: admin
+      KC_DB_PASSWORD: develop
       #to keep compatible with other services that are expecting /auth
-      KC_HTTP_RELATIVE_PATH: /auth
+      KC_HTTP_RELATIVE_PATH: /kc
       KC_HOSTNAME_STRICT_HTTPS: "false"
       JAVA_OPTS_APPEND: "-Dkeycloak.migration.action=import -Dkeycloak.migration.provider=dir -Dkeycloak.migration.dir=/import -Dkeycloak.migration.strategy=IGNORE_EXISTING"
     volumes:
       - ./import:/import
-      - ./api-key-module/target/deploy:/opt/keycloak/providers/
+      #- ./api-key-module/target/deploy:/opt/keycloak/providers/
     ports:
     - "8080:8080"
-    command: ["start"]
-  dashboard-service:
-    build: dashboard-service
+    command: ["start", "--verbose"]
+    networks:
+      - uepm
+
+  postgresql:
+    container_name: postgres
+    image: postgres
     environment:
-      REALM_NAME: example
+      PGDATA: /data/postgres
+      POSTGRES_DB: postgres
+    env_file:
+      - "postgres.env"
+    volumes:
+      - db:/data/postgres
+      - ./postgres-init-scripts:/docker-entrypoint-initdb.d
     ports:
-    - "8180:8180"
-  rest-api-service:
-    build: rest-api-service
-    environment:
-      REALM_NAME: example
-      AUTH_SERVER_URL: auth-server:8080
-    ports:
-    - "8280:8280"
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - uepm
+
+
+networks:
+  uepm:
+    name: uepm
+
+volumes:
+  db:

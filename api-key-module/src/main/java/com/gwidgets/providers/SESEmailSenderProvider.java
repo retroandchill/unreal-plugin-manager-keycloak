@@ -7,21 +7,43 @@ import com.amazonaws.services.simpleemail.model.Destination;
 import com.amazonaws.services.simpleemail.model.Message;
 import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 import java.util.Map;
+
+import lombok.RequiredArgsConstructor;
 import org.jboss.logging.Logger;
 import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailSenderProvider;
 import org.keycloak.models.UserModel;
 
+/**
+ * Implementation of the {@link EmailSenderProvider} interface that sends emails using Amazon Simple Email Service (SES).
+ * <p>
+ * This class integrates with AWS SES to send both plain text and HTML emails. It leverages the provided
+ * SES client to construct and dispatch email messages to recipients.
+ * <p>
+ * Responsibilities:
+ * - Sends emails to a specified user or email address using AWS SES.
+ * - Logs the status of email operations for diagnostic purposes.
+ * <p>
+ * Constructor:
+ * - Accepts an {@link AmazonSimpleEmailService} instance to initialize the SES client used for email dispatch.
+ * <p>
+ * Implemented Methods:
+ * - {@link #send(Map, UserModel, String, String, String)}: Sends an email to a {@link UserModel} recipient.
+ * - {@link #send(Map, String, String, String, String)}: Sends an email to a specified address with the provided details.
+ * - {@link #close()}: Cleans up resources if necessary. This implementation contains no additional cleanup logic.
+ * <p>
+ * Error Handling:
+ * - Throws {@link EmailException} in case of errors during the email sending process.
+ * <p>
+ * Logging:
+ * - Logs the attempt to send an email and the success of the operation for debugging and monitoring purposes.
+ */
+@RequiredArgsConstructor
 public class SESEmailSenderProvider implements EmailSenderProvider {
 
   private static final Logger log = Logger.getLogger("org.keycloak.events");
 
   private final AmazonSimpleEmailService sesClient;
-
-  public SESEmailSenderProvider(
-      AmazonSimpleEmailService sesClient) {
-    this.sesClient = sesClient;
-  }
 
   @Override
   public void send(Map<String, String> config, UserModel user, String subject, String textBody,
