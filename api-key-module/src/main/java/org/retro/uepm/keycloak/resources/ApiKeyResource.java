@@ -4,11 +4,17 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
+import org.jboss.logging.Logger;
+import org.keycloak.credential.CredentialProvider;
 import org.keycloak.models.KeycloakSession;
 import org.retro.uepm.keycloak.providers.ApiKeyCredentialProvider;
 import org.retro.uepm.keycloak.providers.ApiKeyCredentialReader;
 
+import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.time.temporal.TemporalAmount;
+
+import static org.jboss.logging.Logger.getLogger;
 
 /**
  * A JAX-RS resource that provides functionality for API key validation.
@@ -40,42 +46,45 @@ import java.time.temporal.TemporalAmount;
  */
 @Provider
 public class ApiKeyResource {
+  private static final Logger logger = getLogger(ApiKeyResource.class);
 
-    private final KeycloakSession session;
+  private final KeycloakSession session;
+  private final ApiKeyCredentialReader reader;
 
-    public ApiKeyResource(KeycloakSession session) {
-        this.session = session;
+  public ApiKeyResource(KeycloakSession session) {
+    this.session = session;
+    this.reader = new ApiKeyCredentialReader(session);
+  }
+
+  @GET
+  @Produces("application/json")
+  public Response checkApiKey(@QueryParam("apiKey") String apiKey) {
+    logger.infof("Decoding key: %s", apiKey);
+    return reader.validateKey(apiKey) ? Response.ok().type(MediaType.APPLICATION_JSON).build() :
+        Response.status(401).type(MediaType.APPLICATION_JSON).build();
+  }
+
+  @POST
+  @Produces("application/json")
+  public Response createApiKey(@QueryParam("userId") String userId,
+                               @QueryParam("expiresOn") String expiresOn) {
+    var realm = session.getContext().getRealm();
+    var user = session.users().getUserById(realm, userId);
+    if (user == null) {
+      logger.warnf("No such user: %s", userId);
+      return Response.status(404).type(MediaType.APPLICATION_JSON).build();
     }
 
-    @GET
-    @Produces("application/json")
-    public Response checkApiKey(@QueryParam("apiKey") String apiKey) {
-        var reader = session.getProvider(ApiKeyCredentialReader.class);
-
-        return reader.validateKey(apiKey) ? Response.ok().type(MediaType.APPLICATION_JSON).build() :
-                Response.status(401).type(MediaType.APPLICATION_JSON).build();
-    }
-
-    @POST
-    @Path("users/{userId}/apiKey")
-    @Produces("application/json")
-    public Response createApiKey(@PathParam("userId") String userId,
-                                 @QueryParam("expireIn") TemporalAmount expireIn) {
-        var realm = session.getContext().getRealm();
-        var user = session.users().getUserById(realm, userId);
-        if (user == null) {
-            return Response.status(404).type(MediaType.APPLICATION_JSON).build();
-        }
-
-        var provider = session.getProvider(ApiKeyCredentialProvider.class);
-        var newCredential = provider.createCredential(realm, user, expireIn);
-        return newCredential
-                .map(key -> Response.status(201)
-                        .type(MediaType.APPLICATION_JSON)
-                        .entity(key)
-                        .build())
-                .orElseGet(() -> Response.status(500)
-                        .type(MediaType.APPLICATION_JSON)
-                        .build());
-    }
+    var provider = (ApiKeyCredentialProvider) session.getProvider(CredentialProvider.class, "api-key");
+    logger.infof("Input date: %s", expiresOn);
+    var newCredential = provider.createCredential(realm, user, OffsetDateTime.parse(expiresOn));
+    return newCredential
+        .map(key -> Response.status(201)
+            .type(MediaType.APPLICATION_JSON)
+            .entity(key)
+            .build())
+        .orElseGet(() -> Response.status(500)
+            .type(MediaType.APPLICATION_JSON)
+            .build());
+  }
 }

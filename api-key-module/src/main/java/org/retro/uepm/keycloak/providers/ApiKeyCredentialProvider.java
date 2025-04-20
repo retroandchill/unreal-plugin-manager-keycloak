@@ -21,90 +21,90 @@ import static org.jboss.logging.Logger.getLogger;
 
 @RequiredArgsConstructor
 public class ApiKeyCredentialProvider implements CredentialProvider<ApiKeyCredentialModel> {
-    private static final Logger logger = getLogger(ApiKeyCredentialProvider.class);
+  private static final Logger logger = getLogger(ApiKeyCredentialProvider.class);
 
-    private final KeycloakSession session;
-    private final SecretGenerator secretGenerator = SecretGenerator.getInstance();
+  private final KeycloakSession session;
+  private final SecretGenerator secretGenerator = SecretGenerator.getInstance();
 
-    @Override
-    public String getType() {
-        return ApiKeyCredentialModel.TYPE;
+  @Override
+  public String getType() {
+    return ApiKeyCredentialModel.TYPE;
+  }
+
+  public Optional<CreatedApiKey> createCredential(RealmModel realmModel, UserModel userModel, OffsetDateTime expireOn) {
+    var policy = realmModel.getPasswordPolicy();
+    var hashProvider = getHashProvider(policy);
+    if (hashProvider == null) {
+      return Optional.empty();
     }
 
-    public Optional<CreatedApiKey> createCredential(RealmModel realmModel, UserModel userModel, TemporalAmount expireIn) {
-        var policy = realmModel.getPasswordPolicy();
-        var hashProvider = getHashProvider(policy);
-        if (hashProvider == null) {
-            return Optional.empty();
-        }
+    try {
+      var privateComponent = secretGenerator.randomBytes(32);
+      var encodedBytes = Base64.getEncoder().encodeToString(privateComponent);
+      var credentialModel = hashProvider.encodedCredential(encodedBytes, policy.getHashIterations());
+      credentialModel.setCreatedDate(Time.currentTimeMillis());
+      var apiKeyModel = ApiKeyCredentialModel.createFromValues(credentialModel, expireOn);
+      var createdCredential = createCredential(realmModel, userModel, apiKeyModel);
+      var userId = UUID.fromString(userModel.getId());
+      var keyId = UUID.fromString(createdCredential.getId());
 
-        try {
-            var privateComponent = secretGenerator.randomBytes(32);
-            var encodedBytes = Base64.getEncoder().encodeToString(privateComponent);
-            var credentialModel = hashProvider.encodedCredential(encodedBytes, policy.getHashIterations());
-            credentialModel.setCreatedDate(Time.currentTimeMillis());
-            var apiKeyModel = ApiKeyCredentialModel.createFromValues(credentialModel, OffsetDateTime.now().plus(expireIn));
-            var createdCredential = createCredential(realmModel, userModel, apiKeyModel);
-            var userId = UUID.fromString(userModel.getId());
-            var keyId = UUID.fromString(createdCredential.getId());
+      var combinedKey = combineKey(userId, keyId, privateComponent);
+      return Optional.of(new CreatedApiKey(Base64.getEncoder().encodeToString(combinedKey),
+          apiKeyModel.getApiKeyCredentialsData().expiresOn()));
+    } catch (Throwable t) {
+      throw new ModelException(t.getMessage(), t);
+    }
+  }
 
-            var combinedKey = combineKey(userId, keyId, privateComponent);
-            return Optional.of(new CreatedApiKey(Base64.getEncoder().encodeToString(combinedKey),
-                    apiKeyModel.getApiKeyCredentialsData().expiresOn()));
-        } catch (Throwable t) {
-            throw new ModelException(t.getMessage(), t);
-        }
+  private byte[] combineKey(UUID userId, UUID keyId, byte[] privateBytes) {
+    var buffer = ByteBuffer.allocate(32 + privateBytes.length);
+    buffer.putLong(userId.getMostSignificantBits());
+    buffer.putLong(userId.getLeastSignificantBits());
+    buffer.putLong(keyId.getMostSignificantBits());
+    buffer.putLong(keyId.getLeastSignificantBits());
+    buffer.put(privateBytes);
+    return buffer.array();
+  }
+
+  @Override
+  public CredentialModel createCredential(RealmModel realmModel, UserModel userModel, ApiKeyCredentialModel credentialModel) {
+    return userModel.credentialManager().createStoredCredential(credentialModel);
+  }
+
+  @Override
+  public boolean deleteCredential(RealmModel realmModel, UserModel userModel, String credentialId) {
+    return userModel.credentialManager().removeStoredCredentialById(credentialId);
+  }
+
+  @Override
+  public ApiKeyCredentialModel getCredentialFromModel(CredentialModel credentialModel) {
+    return ApiKeyCredentialModel.createFromCredentialModel(credentialModel);
+  }
+
+  @Override
+  public CredentialTypeMetadata getCredentialTypeMetadata(CredentialTypeMetadataContext metadataContext) {
+    var metadataBuilder = CredentialTypeMetadata.builder()
+        .type(getType())
+        .category(CredentialTypeMetadata.Category.BASIC_AUTHENTICATION)
+        .displayName("api-key-display-name")
+        .helpText("e(\"api-key-help-text")
+        .iconCssClass("kcAuthenticatorPasswordClass");
+
+    return metadataBuilder
+        .removeable(false)
+        .build(session);
+  }
+
+  private PasswordHashProvider getHashProvider(PasswordPolicy policy) {
+    if (policy != null && policy.getHashAlgorithm() != null) {
+      var provider = session.getProvider(PasswordHashProvider.class, policy.getHashAlgorithm());
+      if (provider != null) {
+        return provider;
+      } else {
+        logger.warnv("Realm PasswordPolicy PasswordHashProvider {0} not found", policy.getHashAlgorithm());
+      }
     }
 
-    private byte[] combineKey(UUID userId, UUID keyId, byte[] privateBytes) {
-        var buffer = ByteBuffer.allocate(32 + privateBytes.length);
-        buffer.putLong(userId.getMostSignificantBits());
-        buffer.putLong(userId.getLeastSignificantBits());
-        buffer.putLong(keyId.getMostSignificantBits());
-        buffer.putLong(keyId.getLeastSignificantBits());
-        buffer.put(privateBytes);
-        return buffer.array();
-    }
-
-    @Override
-    public CredentialModel createCredential(RealmModel realmModel, UserModel userModel, ApiKeyCredentialModel credentialModel) {
-        return userModel.credentialManager().createStoredCredential(credentialModel);
-    }
-
-    @Override
-    public boolean deleteCredential(RealmModel realmModel, UserModel userModel, String credentialId) {
-        return userModel.credentialManager().removeStoredCredentialById(credentialId);
-    }
-
-    @Override
-    public ApiKeyCredentialModel getCredentialFromModel(CredentialModel credentialModel) {
-        return ApiKeyCredentialModel.createFromCredentialModel(credentialModel);
-    }
-
-    @Override
-    public CredentialTypeMetadata getCredentialTypeMetadata(CredentialTypeMetadataContext metadataContext) {
-        var metadataBuilder = CredentialTypeMetadata.builder()
-                .type(getType())
-                .category(CredentialTypeMetadata.Category.BASIC_AUTHENTICATION)
-                .displayName("api-key-display-name")
-                .helpText("e(\"api-key-help-text")
-                .iconCssClass("kcAuthenticatorPasswordClass");
-
-        return metadataBuilder
-                .removeable(false)
-                .build(session);
-    }
-
-    private PasswordHashProvider getHashProvider(PasswordPolicy policy) {
-        if (policy != null && policy.getHashAlgorithm() != null) {
-            var provider = session.getProvider(PasswordHashProvider.class, policy.getHashAlgorithm());
-            if (provider != null) {
-                return provider;
-            } else {
-                logger.warnv("Realm PasswordPolicy PasswordHashProvider {0} not found", policy.getHashAlgorithm());
-            }
-        }
-
-        return session.getProvider(PasswordHashProvider.class);
-    }
+    return session.getProvider(PasswordHashProvider.class);
+  }
 }

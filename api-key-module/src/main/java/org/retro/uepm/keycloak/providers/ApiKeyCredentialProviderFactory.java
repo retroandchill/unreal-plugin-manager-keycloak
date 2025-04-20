@@ -7,15 +7,15 @@ import org.keycloak.models.KeycloakSession;
 
 @AutoService(CredentialProviderFactory.class)
 public class ApiKeyCredentialProviderFactory implements CredentialProviderFactory<ApiKeyCredentialProvider> {
-    public static final String PROVIDER_ID = "api-key";
+  public static final String PROVIDER_ID = "api-key";
 
-    @Override
-    public ApiKeyCredentialProvider create(KeycloakSession keycloakSession) {
-        return new ApiKeyCredentialProvider(keycloakSession);
-    }
+  @Override
+  public ApiKeyCredentialProvider create(KeycloakSession keycloakSession) {
+    return new ApiKeyCredentialProvider(keycloakSession);
+  }
 
-    @Override
-    public String getId() {
-        return PROVIDER_ID;
-    }
+  @Override
+  public String getId() {
+    return PROVIDER_ID;
+  }
 }
