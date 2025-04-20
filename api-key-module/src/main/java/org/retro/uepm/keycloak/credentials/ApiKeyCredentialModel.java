@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.models.credential.PasswordCredentialModel;
-import org.keycloak.models.credential.dto.PasswordCredentialData;
 import org.keycloak.models.credential.dto.PasswordSecretData;
 import org.keycloak.util.JsonSerialization;
 
@@ -18,8 +17,8 @@ public class ApiKeyCredentialModel extends CredentialModel {
 
     public static final String TYPE = "api-key";
 
-    private final ApiKeyCredentialsData credentialData;
-    private final PasswordSecretData secretData;
+    private final ApiKeyCredentialsData apiKeyCredentialsData;
+    private final PasswordSecretData passwordSecretData;
 
     public static ApiKeyCredentialModel createFromValues(ApiKeyCredentialsData credentialData, PasswordSecretData secretData) {
         return new ApiKeyCredentialModel(credentialData, secretData);

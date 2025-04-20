@@ -1,27 +1,21 @@
 package org.retro.uepm.keycloak.providers;
 
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.jboss.logging.Logger;
 import org.keycloak.common.util.SecretGenerator;
 import org.keycloak.common.util.Time;
-import org.keycloak.connections.jpa.JpaConnectionProvider;
 import org.keycloak.credential.*;
 import org.keycloak.credential.hash.PasswordHashProvider;
 import org.keycloak.models.*;
-import org.keycloak.models.credential.PasswordCredentialModel;
 import org.retro.uepm.keycloak.credentials.ApiKeyCredentialModel;
 import org.retro.uepm.keycloak.credentials.CreatedApiKey;
 
 import java.nio.ByteBuffer;
-import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.temporal.TemporalAmount;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import static org.jboss.logging.Logger.getLogger;
 
@@ -56,7 +50,7 @@ public class ApiKeyCredentialProvider implements CredentialProvider<ApiKeyCreden
 
             var combinedKey = combineKey(userId, keyId, privateComponent);
             return Optional.of(new CreatedApiKey(Base64.getEncoder().encodeToString(combinedKey),
-                    apiKeyModel.getCredentialData().expiresOn()));
+                    apiKeyModel.getApiKeyCredentialsData().expiresOn()));
         } catch (Throwable t) {
             throw new ModelException(t.getMessage(), t);
         }
