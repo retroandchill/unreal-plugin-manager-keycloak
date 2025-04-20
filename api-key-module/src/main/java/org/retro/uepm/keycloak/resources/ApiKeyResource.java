@@ -1,4 +1,4 @@
-package com.gwidgets.resources;
+package org.retro.uepm.keycloak.resources;
 
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Produces;

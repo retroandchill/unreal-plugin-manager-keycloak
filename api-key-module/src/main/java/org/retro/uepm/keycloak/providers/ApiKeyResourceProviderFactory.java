@@ -1,4 +1,4 @@
-package com.gwidgets.providers;
+package org.retro.uepm.keycloak.providers;
 
 import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;

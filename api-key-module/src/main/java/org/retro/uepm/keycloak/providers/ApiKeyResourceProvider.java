@@ -1,7 +1,7 @@
-package com.gwidgets.providers;
+package org.retro.uepm.keycloak.providers;
 
-import com.gwidgets.resources.ApiKeyResource;
 import lombok.RequiredArgsConstructor;
+import org.retro.uepm.keycloak.resources.ApiKeyResource;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.services.resource.RealmResourceProvider;
 

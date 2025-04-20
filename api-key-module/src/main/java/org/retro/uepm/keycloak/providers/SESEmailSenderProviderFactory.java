@@ -1,4 +1,4 @@
-package com.gwidgets.providers;
+package org.retro.uepm.keycloak.providers;
 
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;

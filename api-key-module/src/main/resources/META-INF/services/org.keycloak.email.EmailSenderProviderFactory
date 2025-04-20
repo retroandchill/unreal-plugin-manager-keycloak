@@ -1,1 +1,1 @@
-com.gwidgets.providers.SESEmailSenderProviderFactory
+org.retro.uepm.keycloak.providers.SESEmailSenderProviderFactory
