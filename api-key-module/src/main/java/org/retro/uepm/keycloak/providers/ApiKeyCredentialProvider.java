@@ -49,7 +49,7 @@ public class ApiKeyCredentialProvider implements CredentialProvider<ApiKeyCreden
       var keyId = UUID.fromString(createdCredential.getId());
 
       var combinedKey = combineKey(userId, keyId, privateComponent);
-      return Optional.of(new CreatedApiKey(Base64.getEncoder().encodeToString(combinedKey),
+      return Optional.of(new CreatedApiKey(keyId, Base64.getEncoder().encodeToString(combinedKey),
           apiKeyModel.getApiKeyCredentialsData().expiresOn()));
     } catch (Throwable t) {
       throw new ModelException(t.getMessage(), t);
