@@ -24,12 +24,33 @@ import java.util.UUID;
 
 import static org.jboss.logging.Logger.getLogger;
 
+/**
+ * The ApiKeyCredentialReader class is utilized to validate API keys against stored credentials
+ * within a Keycloak session. It interacts with the Keycloak user and credential storage system
+ * to verify the authenticity and validity of an API key, ensuring the provided key matches
+ * the stored credential data and is not expired. The class relies on API key data modeled
+ * using the ApiKeyCredentialModel and its related components.
+ * <p>
+ * This class contains methods for decoding API keys, accessing user credentials, and verifying hashed keys
+ * using the appropriate password hashing provider.
+ */
 @RequiredArgsConstructor
 public class ApiKeyCredentialReader {
   private static final Logger logger = getLogger(ApiKeyCredentialReader.class);
 
   private final KeycloakSession session;
 
+  /**
+   * Validates the provided API key by decoding and verifying its components against stored credentials.
+   * <p>
+   * This method checks if the given API key matches a user's stored key, ensures the key's expiration
+   * has not passed, and validates the key's hash using the specified algorithm. If any of these
+   * conditions fail, the method returns false.
+   *
+   * @param apiKey the Base64-encoded string representing the API key to be validated
+   * @return true if the API key is valid and matches the stored credentials; false otherwise
+   * @throws ModelException if an error occurs while reading the credential data
+   */
   public boolean validateKey(String apiKey) {
     var keyBytes = Base64.getDecoder().decode(apiKey);
     var buffer = ByteBuffer.wrap(keyBytes);

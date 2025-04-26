@@ -19,6 +19,13 @@ import java.util.UUID;
 
 import static org.jboss.logging.Logger.getLogger;
 
+/**
+ * The {@code ApiKeyCredentialProvider} class is an implementation of the
+ * {@link CredentialProvider} interface specifically designed to manage
+ * API key credentials for users within a Keycloak session.
+ * It provides functionality for creating, storing, deleting,
+ * and retrieving API key credentials.
+ */
 @RequiredArgsConstructor
 public class ApiKeyCredentialProvider implements CredentialProvider<ApiKeyCredentialModel> {
   private static final Logger logger = getLogger(ApiKeyCredentialProvider.class);
@@ -31,6 +38,18 @@ public class ApiKeyCredentialProvider implements CredentialProvider<ApiKeyCreden
     return ApiKeyCredentialModel.TYPE;
   }
 
+  /**
+   * Creates an API key credential for the specified user within a given realm
+   * and associates it with an expiration timestamp.
+   *
+   * @param realmModel the {@code RealmModel} representing the realm where the credential is created
+   * @param userModel the {@code UserModel} representing the user for whom the credential is being created
+   * @param expireOn the {@code OffsetDateTime} indicating when the credential should expire
+   * @return an {@code Optional} containing the created {@code CreatedApiKey} with details about the API key,
+   *         or an empty {@code Optional} if the credential could not be created due to missing components
+   *         like the hash provider
+   * @throws ModelException if an error occurs during the creation process
+   */
   public Optional<CreatedApiKey> createCredential(RealmModel realmModel, UserModel userModel, OffsetDateTime expireOn) {
     var policy = realmModel.getPasswordPolicy();
     var hashProvider = getHashProvider(policy);
