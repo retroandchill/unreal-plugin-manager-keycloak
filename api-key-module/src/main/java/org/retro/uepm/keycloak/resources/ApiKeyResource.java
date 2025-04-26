@@ -4,9 +4,11 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.jboss.logging.Logger;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.models.KeycloakSession;
+import org.retro.uepm.keycloak.model.ApiKeyRequest;
 import org.retro.uepm.keycloak.providers.ApiKeyCredentialProvider;
 import org.retro.uepm.keycloak.providers.ApiKeyCredentialReader;
 
@@ -58,7 +60,7 @@ public class ApiKeyResource {
 
   @GET
   @Produces("application/json")
-  public Response checkApiKey(@QueryParam("apiKey") String apiKey) {
+  public Response checkApiKey(@HeaderParam("ApiKey") String apiKey) {
     logger.infof("Decoding key: %s", apiKey);
     return reader.validateKey(apiKey) ? Response.ok().type(MediaType.APPLICATION_JSON).build() :
         Response.status(401).type(MediaType.APPLICATION_JSON).build();
@@ -66,8 +68,10 @@ public class ApiKeyResource {
 
   @POST
   @Produces("application/json")
-  public Response createApiKey(@QueryParam("userId") String userId,
-                               @QueryParam("expiresOn") String expiresOn) {
+  public Response createApiKey(@RequestBody ApiKeyRequest apiKeyRequest) {
+    var userId = apiKeyRequest.userId();
+    var expiresOn = apiKeyRequest.expiresOn();
+
     var realm = session.getContext().getRealm();
     var user = session.users().getUserById(realm, userId);
     if (user == null) {
