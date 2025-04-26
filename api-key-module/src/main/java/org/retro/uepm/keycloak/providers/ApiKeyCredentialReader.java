@@ -63,8 +63,6 @@ public class ApiKeyCredentialReader {
 
       var apiKeyData = ApiKeyCredentialModel.createFromCredentialModel(key);
       var passwordCredentialModel = apiKeyData.toPasswordCredentialModel();
-      logger.infof("Encoded password: %s", passwordCredentialModel.getPasswordSecretData().getValue());
-      logger.infof("Hash iterations: %d", passwordCredentialModel.getPasswordCredentialData().getHashIterations());
       return hash.verify(encodedKey, passwordCredentialModel);
     } catch (IOException e) {
       throw new ModelException("Could not read credential data", e);

@@ -61,7 +61,6 @@ public class ApiKeyResource {
   @GET
   @Produces("application/json")
   public Response checkApiKey(@HeaderParam("ApiKey") String apiKey) {
-    logger.infof("Decoding key: %s", apiKey);
     return reader.validateKey(apiKey) ? Response.ok().type(MediaType.APPLICATION_JSON).build() :
         Response.status(401).type(MediaType.APPLICATION_JSON).build();
   }
@@ -80,7 +79,6 @@ public class ApiKeyResource {
     }
 
     var provider = (ApiKeyCredentialProvider) session.getProvider(CredentialProvider.class, "api-key");
-    logger.infof("Input date: %s", expiresOn);
     var newCredential = provider.createCredential(realm, user, OffsetDateTime.parse(expiresOn));
     return newCredential
         .map(key -> Response.status(201)
