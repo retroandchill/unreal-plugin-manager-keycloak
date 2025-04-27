@@ -34,7 +34,6 @@ public class ApiKeyResourceProvider implements RealmResourceProvider {
 
   @Override
   public Object getResource() {
-    logger.info("Created API Key Resource");
     return new ApiKeyResource(session);
   }
 

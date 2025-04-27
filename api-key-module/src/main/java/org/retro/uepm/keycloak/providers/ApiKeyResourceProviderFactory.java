@@ -38,7 +38,6 @@ public class ApiKeyResourceProviderFactory implements RealmResourceProviderFacto
 
   @Override
   public RealmResourceProvider create(KeycloakSession session) {
-    logger.info("Created API Key Resource Provider");
     return new ApiKeyResourceProvider(session);
   }
 

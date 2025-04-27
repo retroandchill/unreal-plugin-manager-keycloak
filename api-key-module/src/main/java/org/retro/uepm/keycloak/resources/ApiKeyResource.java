@@ -61,20 +61,26 @@ public class ApiKeyResource {
   @GET
   @Produces("application/json")
   public Response checkApiKey(@HeaderParam("ApiKey") String apiKey) {
-    return reader.validateKey(apiKey) ? Response.ok().type(MediaType.APPLICATION_JSON).build() :
-        Response.status(401).type(MediaType.APPLICATION_JSON).build();
+    return reader.validateKey(apiKey)
+        .map(k -> Response.ok()
+            .type(MediaType.APPLICATION_JSON)
+            .entity(k)
+            .build())
+        .orElseGet(() -> Response.status(401)
+            .type(MediaType.APPLICATION_JSON)
+            .build());
   }
 
   @POST
   @Produces("application/json")
   public Response createApiKey(@RequestBody ApiKeyRequest apiKeyRequest) {
-    var userId = apiKeyRequest.userId();
+    var username = apiKeyRequest.username();
     var expiresOn = apiKeyRequest.expiresOn();
 
     var realm = session.getContext().getRealm();
-    var user = session.users().getUserById(realm, userId);
+    var user = session.users().getUserByUsername(realm, username);
     if (user == null) {
-      logger.warnf("No such user: %s", userId);
+      logger.warnf("No such user: %s", username);
       return Response.status(404).type(MediaType.APPLICATION_JSON).build();
     }
 

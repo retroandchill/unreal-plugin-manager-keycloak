@@ -8,8 +8,8 @@ package org.retro.uepm.keycloak.model;
  * This record provides a simple, immutable container for passing these
  * details within the API, particularly in the context of creating new API keys.
  *
- * @param userId The identifier of the user for whom the API key is being created.
+ * @param username The name of the user for whom the API key is being created.
  * @param expiresOn The expiration datetime for the API key in ISO-8601 format.
  */
-public record ApiKeyRequest(String userId, String expiresOn) {
+public record ApiKeyRequest(String username, String expiresOn) {
 }

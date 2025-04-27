@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
 import java.time.OffsetDateTime;
 import java.util.Base64;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.jboss.logging.Logger.getLogger;
@@ -51,7 +52,7 @@ public class ApiKeyCredentialReader {
    * @return true if the API key is valid and matches the stored credentials; false otherwise
    * @throws ModelException if an error occurs while reading the credential data
    */
-  public boolean validateKey(String apiKey) {
+  public Optional<UUID> validateKey(String apiKey) {
     var keyBytes = Base64.getDecoder().decode(apiKey);
     var buffer = ByteBuffer.wrap(keyBytes);
     var userUpper = buffer.getLong();
@@ -60,7 +61,7 @@ public class ApiKeyCredentialReader {
 
     var user = session.users().getUserById(session.getContext().getRealm(), userId.toString());
     if (user == null) {
-      return false;
+      return Optional.empty();
     }
 
     var keyUpper = buffer.getLong();
@@ -68,14 +69,14 @@ public class ApiKeyCredentialReader {
     var keyId = new UUID(keyUpper, keyLower);
     var key = user.credentialManager().getStoredCredentialById(keyId.toString());
     if (key == null || !Objects.equals(key.getType(), ApiKeyCredentialModel.TYPE)) {
-      return false;
+      return Optional.empty();
     }
 
     try {
       var credentialData = JsonSerialization.readValue(key.getCredentialData(), ApiKeyCredentialsData.class);
       var now = OffsetDateTime.now();
       if (now.isAfter(credentialData.expiresOn())) {
-        return false;
+        return Optional.empty();
       }
 
       var keySecretBytes = readRemaining(buffer);
@@ -84,7 +85,8 @@ public class ApiKeyCredentialReader {
 
       var apiKeyData = ApiKeyCredentialModel.createFromCredentialModel(key);
       var passwordCredentialModel = apiKeyData.toPasswordCredentialModel();
-      return hash.verify(encodedKey, passwordCredentialModel);
+      return Optional.of(keyId)
+          .filter(i -> hash.verify(encodedKey, passwordCredentialModel));
     } catch (IOException e) {
       throw new ModelException("Could not read credential data", e);
     }
@@ -103,7 +105,7 @@ public class ApiKeyCredentialReader {
       if (provider != null) {
         return provider;
       } else {
-        logger.warnv("Realm PasswordPolicy PasswordHashProvider {0} not found", hashAlgorithm);
+        logger.warnv("Realm PasswordPolicy PasswordHashProvider %s not found", hashAlgorithm);
       }
     }
 

@@ -120,7 +120,7 @@ public class ApiKeyCredentialProvider implements CredentialProvider<ApiKeyCreden
       if (provider != null) {
         return provider;
       } else {
-        logger.warnv("Realm PasswordPolicy PasswordHashProvider {0} not found", policy.getHashAlgorithm());
+        logger.warnv("Realm PasswordPolicy PasswordHashProvider %s not found", policy.getHashAlgorithm());
       }
     }
 
