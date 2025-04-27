@@ -1,9 +1,12 @@
 package org.retro.uepm.keycloak.providers;
 
 import lombok.RequiredArgsConstructor;
+import org.jboss.logging.Logger;
 import org.retro.uepm.keycloak.resources.ApiKeyResource;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.services.resource.RealmResourceProvider;
+
+import static org.jboss.logging.Logger.getLogger;
 
 /**
  * A provider class that implements the {@link RealmResourceProvider} interface and provides access to
@@ -20,19 +23,21 @@ import org.keycloak.services.resource.RealmResourceProvider;
  * <p>
  * Implemented Methods:
  * - {@code getResource}: Returns an instance of {@link ApiKeyResource}, providing the ability to
- *   handle API key validation requests.
+ * handle API key validation requests.
  * - {@code close}: Implementation of the close operation (currently a no-op).
  */
 @RequiredArgsConstructor
 public class ApiKeyResourceProvider implements RealmResourceProvider {
+  private static final Logger logger = getLogger(ApiKeyResourceProvider.class);
 
-    private final KeycloakSession session;
+  private final KeycloakSession session;
 
-    @Override
-    public Object getResource() {
-        return new ApiKeyResource(session);
-    }
+  @Override
+  public Object getResource() {
+    return new ApiKeyResource(session);
+  }
 
-    @Override
-    public void close() {}
+  @Override
+  public void close() {
+  }
 }
