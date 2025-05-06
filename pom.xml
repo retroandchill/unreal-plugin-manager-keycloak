@@ -20,6 +20,7 @@
 
     <modules>
         <module>api-key-module</module>
+        <module>login-theme</module>
     </modules>
 
 </project>
