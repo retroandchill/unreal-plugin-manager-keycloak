@@ -17,7 +17,13 @@ export const { getKcContextMock } = createGetKcContextMock({
     kcContextExtension,
     kcContextExtensionPerPage,
     overrides: {},
-    overridesPerPage: {}
+    overridesPerPage: {
+        "login.ftl": {
+            realm: {
+                registrationAllowed: true
+            }
+        }
+    }
 });
 
 export function createKcPageStory<PageId extends KcContext["pageId"]>(params: {
