@@ -17,6 +17,35 @@ import {
     Box
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import {
+    Google,
+    Facebook,
+    Instagram,
+    Twitter,
+    LinkedIn,
+    GitHub,
+    CloudQueue,
+    Payment,
+    Microsoft,
+    Code
+} from '@mui/icons-material';
+import { SvgIcon } from '@mui/material';
+
+const socialIconMap: Record<string, typeof SvgIcon> = {
+    google: Google,
+    microsoft: Microsoft,
+    facebook: Facebook,
+    instagram: Instagram,
+    twitter: Twitter,
+    linkedin: LinkedIn,
+    stackoverflow: Code, // Using Code as a close alternative
+    github: GitHub,
+    gitlab: Code, // Using Code as alternative
+    bitbucket: Code, // Using Code as alternative
+    paypal: Payment,
+    openshift: CloudQueue // Using CloudQueue for cloud platform
+};
+
 
 export function Login(props: PageProps<Extract<KcContext, { pageId: "login.ftl" }>, I18n>) {
     const { kcContext, i18n, doUseDefaultCss, Template, classes } = props;
@@ -29,6 +58,11 @@ export function Login(props: PageProps<Extract<KcContext, { pageId: "login.ftl" 
     const [showPassword, setShowPassword] = useState(false);
 
     const handleClickShowPassword = () => setShowPassword(!showPassword);
+
+    const getSocialIcon = (alias: string) => {
+        const Icon = socialIconMap[alias.toLowerCase()];
+        return Icon ? <Icon /> : null;
+    };
 
     return (
         <Template
@@ -61,7 +95,7 @@ export function Login(props: PageProps<Extract<KcContext, { pageId: "login.ftl" 
                                         key={p.alias}
                                         variant="outlined"
                                         href={p.loginUrl}
-                                        startIcon={p.iconClasses && <i className={p.iconClasses} />}
+                                        startIcon={getSocialIcon(p.alias)}
                                     >
                                         <span dangerouslySetInnerHTML={{ __html: kcSanitize(p.displayName) }} />
                                     </Button>
