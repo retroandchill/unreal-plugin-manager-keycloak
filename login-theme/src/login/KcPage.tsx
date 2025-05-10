@@ -9,6 +9,7 @@ import { ThemeProvider } from "@mui/material";
 import { Login } from "./pages/Login";
 import {theme} from "./Theme.ts";
 import {Register} from "@/login/pages/Register.tsx";
+import {LoginResetPassword} from "@/login/pages/LoginResetPassword.tsx";
 
 const UserProfileFormFields = lazy(
     () => import("./UserProfileFormFields")
@@ -35,6 +36,12 @@ export default function KcPage(props: { kcContext: KcContext }) {
                                 doUseDefaultCss={false}
                               />
                             );
+                        case 'login-reset-password.ftl':
+                            return <LoginResetPassword kcContext={kcContext}
+                                                       i18n={i18n}
+                                                       classes={classes}
+                                                       Template={Template}
+                                                       doUseDefaultCss={false} />;
                         case 'register.ftl':
                             return <Register kcContext={kcContext}
                                              i18n={i18n}
