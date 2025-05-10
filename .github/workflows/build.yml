@@ -41,6 +41,7 @@ jobs:
           name: keycloak-providers
           path: |
             **/target/**
+            **/dist_keycloak/**
 
   build-docker:
     name: Build Docker Container
