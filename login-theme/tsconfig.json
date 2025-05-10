@@ -18,7 +18,11 @@
         "strict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "noFallthroughCasesInSwitch": true
+        "noFallthroughCasesInSwitch": true,
+
+        "paths": {
+            "@/*": ["./src/*"] // Setup alias for Vite's `@` pointing to `src`
+        }
     },
     "include": ["src"],
     "references": [{ "path": "./tsconfig.node.json" }]

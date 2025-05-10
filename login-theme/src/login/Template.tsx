@@ -12,14 +12,13 @@ import {
     Paper,
     Typography,
     Container,
-    AppBar,
-    Toolbar,
     Select,
     MenuItem,
     FormControl,
     Button,
     Alert,
     Stack,
+    Grid,
 } from "@mui/material";
 import {
     Check as CheckIcon,
@@ -29,6 +28,7 @@ import {
     Refresh as RefreshIcon
 } from "@mui/icons-material";
 import {theme} from "./Theme.ts";
+import MainLogo from "@/assets/uepm.svg?react";
 
 export function Template(props: TemplateProps<KcContext, I18n>) {
     const {
@@ -81,7 +81,7 @@ export function Template(props: TemplateProps<KcContext, I18n>) {
                 width: "100%",
             }}
         >
-            <Container maxWidth="sm">
+            <Container maxWidth="lg">
                 <Box
                     sx={{
                         minHeight: "100vh",
@@ -91,16 +91,16 @@ export function Template(props: TemplateProps<KcContext, I18n>) {
                     }}
                 >
                     <Paper elevation={3} className={kcClsx("kcLoginClass")} sx={{p: 3}}>
-                        <AppBar position="static" color="primary" id="kc-header" className={kcClsx("kcHeaderClass")}
-                                sx={{mb: 3}}>
-                            <Toolbar>
-                                <Typography variant="h6" component="div" id="kc-header-wrapper"
-                                            className={kcClsx("kcHeaderWrapperClass")}>
-                                    <div
-                                        dangerouslySetInnerHTML={{__html: msgStr("loginTitleHtml", realm.displayNameHtml)}}/>
-                                </Typography>
-                            </Toolbar>
-                        </AppBar>
+                        <Grid
+                            container
+                            spacing={0}
+                            direction="column"
+                            alignItems="center"
+                            justifyContent="center"
+                            sx={{maxHeight: "128px", marginBottom: 2, marginTop: 2, textAlign: "center"}}
+                        >
+                            <MainLogo/>
+                        </Grid>
 
                         <Box className={kcClsx("kcFormCardClass")}>
                             <Box component="header" className={kcClsx("kcFormHeaderClass")} sx={{mb: 3}}>

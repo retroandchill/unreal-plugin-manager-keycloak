@@ -8,9 +8,10 @@ import {Template} from "./Template";
 import { ThemeProvider } from "@mui/material";
 import { Login } from "./pages/Login";
 import {theme} from "./Theme.ts";
+import {Register} from "@/login/pages/Register.tsx";
 
 const UserProfileFormFields = lazy(
-    () => import("keycloakify/login/UserProfileFormFields")
+    () => import("./UserProfileFormFields")
 );
 
 const doMakeUserConfirmPassword = true;
@@ -34,6 +35,15 @@ export default function KcPage(props: { kcContext: KcContext }) {
                                 doUseDefaultCss={false}
                               />
                             );
+                        case 'register.ftl':
+                            return <Register kcContext={kcContext}
+                                             i18n={i18n}
+                                             classes={classes}
+                                             Template={Template}
+                                             doUseDefaultCss={false}
+                                             doMakeUserConfirmPassword={true}
+                                             UserProfileFormFields={UserProfileFormFields}
+                            />
                         default:
                             return (
                                 <DefaultPage
